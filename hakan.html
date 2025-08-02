@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sesli Hikaye</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      font-family: Arial, sans-serif;
+      color: white;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+
+    .background {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: url('WhatsApp Image 2025-08-02 at 03.39.46.jpeg');
+      background-size: cover;
+      background-position: 90% 50%; /* Yüz kısmı görünür */
+      background-repeat: no-repeat;
+      filter: blur(3px) brightness(0.6);
+      z-index: -1;
+
+      animation: bgZoom 30s ease-in-out infinite alternate;
+      transform-origin: center center;
+    }
+
+    @keyframes bgZoom {
+      0% {
+        transform: scale(1);
+        filter: blur(3px) brightness(0.6);
+        background-position: 85% 20%;
+      }
+      50% {
+        transform: scale(1.1);
+        filter: blur(2.5px) brightness(0.7);
+        background-position: 80% 25%;
+      }
+      100% {
+        transform: scale(1);
+        filter: blur(3px) brightness(0.6);
+        background-position: 85% 20%;
+      }
+    }
+
+    .content {
+      background: rgba(0, 0, 0, 0.6);
+      padding: 5vw;
+      border-radius: 20px;
+      max-width: 90%;
+      box-shadow: 0 0 25px rgba(255, 136, 0, 0.4);
+      z-index: 1;
+      animation: fadeIn 1.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      font-size: 4vw;
+      margin-bottom: 30px;
+      color: #ffcc66;
+      animation: disappear 2s ease-out forwards;
+      animation-delay: 5s;
+    }
+
+    @keyframes disappear {
+      to {
+        opacity: 0;
+        transform: translateY(-30px);
+        display: none;
+      }
+    }
+
+    #quote {
+      font-size: 3.5vw;
+      opacity: 1;
+      transition: opacity 0.5s;
+      min-height: 3em;
+    }
+
+    button {
+      margin-top: 30px;
+      padding: 1em 2em;
+      font-size: 1.1em;
+      border: none;
+      border-radius: 8px;
+      background-color: #ff8800;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #cc6f00;
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 6vw; }
+      #quote { font-size: 5vw; }
+      .content { padding: 8vw; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="background"></div>
+
+  <audio id="bgMusic" src="https://www.bensound.com/bensound-music/bensound-slowmotion.mp3" autoplay loop></audio>
+
+  <div class="content">
+    <h1 id="headerText">BU BİR GEÇMİŞTEN GELECEĞE, ANLAMLI VE YAŞAM DOLU BİR HİKAYEDİR. HAKAN BEYAZ TARAFINDAN YAZILMIŞTIR.</h1>
+    <div id="quote"></div>
+    <button id="speakBtn">Sesli Oku</button>
+  </div>
+
+  <script>
+    const quotes = [
+      "Teknoloji, insanlığın en büyük aynasıdır.",
+      "Her devrim önce düşüncede başlar.",
+      "Zaman, sadece ileriye akan bir bilgi nehridir.",
+      "Hayaller, gerçeğin en sessiz taslağıdır.",
+      "Bilgi, insanlığın evrensel dili ve sonsuz mirasıdır.",
+      "Her fikir bir kıvılcımdır; ateşi yakmak cesaret ister.",
+      "Gelecek, bugünün cesur hayallerinde gizlidir.",
+      "Kod satırlarıyla yazılan dünyalar, kalple şekillenir.",
+      "Dijital izler, ruhun yeni el yazısıdır.",
+      "Sessizlik, bazen en yüksek sesle konuşur.",
+      "İmkânsız, sadece denenmemiş olanın adıdır.",
+      "Her başarı önce bir soruyla başlar: çözmek ayrı bir duygudur.",
+      "Hayat, düşünen zihinler için sonsuz bir algoritmadır.",
+      "Yapay zekâ değil, insanın zekası sınırsızdır.",
+      "Bilgisizlik, bilgiyi hissetmekle başlar.",
+      "Hayat cesur olana güler.",
+      "Kendine inan, dünya sana ayak uydurur.",
+      "Sessizlik, bazen en güçlü cevaptır.",
+      "Zorluklar, seni sen yapan detaylardır.",
+      "Düşmekten korkma, kalkmayı öğren.",
+      "Teknoloji insanlığın geleceğe açılan penceresidir.",
+      "Düşünce gücü, makineleri insanlığa hizmetkar yapar.",
+      "Yapay zeka, bilginin anlam bulduğu yeni çağdır.",
+      "Her yenilik, insanın hayal gücünden doğar.",
+      "Kod satırlarında yazılanlar, yarının dünyasını kurar."
+    ];
+
+    const music = document.getElementById("bgMusic");
+    music.volume = 0.15;
+
+    const headerText = document.getElementById("headerText").textContent;
+    const quoteElement = document.getElementById("quote");
+    const speakBtn = document.getElementById("speakBtn");
+
+    async function loadVoices() {
+      return new Promise(resolve => {
+        let voices = speechSynthesis.getVoices();
+        if (voices.length !== 0) resolve(voices);
+        else speechSynthesis.onvoiceschanged = () => resolve(speechSynthesis.getVoices());
+      });
+    }
+
+    function getTurkishVoice() {
+      const voices = speechSynthesis.getVoices();
+      return voices.find(v => v.lang.startsWith("tr") && (v.name.toLowerCase().includes("male") || v.name.toLowerCase().includes("google") || v.name.toLowerCase().includes("erkek"))) 
+          || voices.find(v => v.lang.startsWith("tr"));
+    }
+
+    async function speakText(text) {
+      await loadVoices();
+      return new Promise(resolve => {
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = "tr-TR";
+        const voice = getTurkishVoice();
+        if (voice) utter.voice = voice;
+        utter.rate = 0.75;
+        utter.pitch = 1;
+        utter.onstart = () => music.volume = 0.02;
+        utter.onend = () => {
+          music.volume = 0.15;
+          setTimeout(resolve, 500);
+        };
+        speechSynthesis.speak(utter);
+      });
+    }
+
+    function getRandomColor() {
+      const colors = ['#FF6F61', '#6B5B95', '#88B04B', '#F7CAC9', '#92A8D1', '#FFB347', '#FF6961', '#77DD77', '#CBAACB', '#F49AC2'];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    async function showAndSpeak(text) {
+      quoteElement.style.opacity = 0;
+      await new Promise(r => setTimeout(r, 300));
+      quoteElement.textContent = text;
+      quoteElement.style.color = getRandomColor();
+      quoteElement.style.opacity = 1;
+      await speakText(text);
+    }
+
+    async function readAll() {
+      speakBtn.disabled = true;
+      await speakText(headerText);
+      document.getElementById("headerText").style.display = "none";
+      for (let q of quotes) {
+        await showAndSpeak(q);
+      }
+      speakBtn.disabled = false;
+    }
+
+    speakBtn.addEventListener("click", () => {
+      if (music.paused) music.play();
+      readAll();
+    });
+  </script>
+</body>
+</html>
